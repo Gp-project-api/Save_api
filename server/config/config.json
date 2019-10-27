@@ -1,0 +1,13 @@
+{
+    "development" : {
+        "PORT" : 3000,
+        "MONGODB_URI": "mongodb://localhost:27017/saveApp",
+        "JWT_SECRETE" : "dhjvyr7bdu382hdiqn83y2753dgb"
+    },
+
+    "test" : {
+        "PORT" : 3000,
+        "MONGODB_URI": "mongodb://localhost:27017/saveAppTest",
+        "JWT_SECRETE" : "dhjvyr7bdu382hdiqn83y2753dgb"
+    }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "save_api",
+  "version": "1.0.0",
+  "description": "Node app provides an api for the (save me app my graduation project)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "expect": "^24.9.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.15",
+    "mocha": "^6.2.2",
+    "mongoose": "^5.7.6",
+    "supertest": "^4.0.2",
+    "validator": "^11.1.0"
+  }
+}
