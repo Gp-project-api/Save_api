@@ -5,6 +5,7 @@ const mongoose = require('./db/mongoose');
 const {User} = require('./db/models/users');
 const {Lost} = require('./db/models/lost');
 const {Found} = require('./db/models/found');
+const path = require('path');
 const _ = require('lodash');
 const bodyParser = require('body-parser');
 const {authintcate} = require('./Middleware/authinticate');
@@ -18,7 +19,7 @@ var full_address;
         cb(null, './uploads')
         },
         filename: function (req, file, cb) {
-        cb(null, file.originalname + '-' + new Date().toISOString().slice(0,10))
+        cb(null, + '-' + new Date().toISOString().slice(0,10) + file.originalname )
         }
     }) 
     var upload = multer({ storage: storage })
@@ -26,7 +27,7 @@ var full_address;
 
 var app = express();
 app.use(bodyParser.json());
-
+app.use(express.static('uploads'))
 
 
 // deafult 
@@ -87,7 +88,7 @@ app.post('/login',(req,res) => {
             time:new Date().toISOString().slice(0,10),
             image:[{
                 main_image:req.file.path,
-                main_image_URL:full_address+'/'+req.file.path
+                main_image_URL:full_address+'/'+ path.basename(req.file.path)
             }]
           
           });
@@ -117,7 +118,7 @@ app.post('/login',(req,res) => {
             time:new Date().toISOString().slice(0,10),
             image:[{
                 main_image:req.file.path,
-                main_image_URL:full_address+'/'+req.file.path
+                main_image_URL:full_address+'/'+ path.basename(req.file.path)
             }] 
           });
           
