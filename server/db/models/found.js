@@ -1,20 +1,12 @@
 const mongoose = require('mongoose');
 
-const lost = mongoose.model('losts',{
-
-    childname:{
+const Found  = mongoose.model('Found',{
+    Gender:{
         type:String,
         required:true,
-        trim:true,
         index:true
-    },
+       },
 
-    Gender:{
-      type:String,
-      trim:true,
-      required:true
-    },
-    
     image:[{
         main_image:{
             type:String,
@@ -24,29 +16,31 @@ const lost = mongoose.model('losts',{
         main_image_URL:{
             type:String,
             trim:true,
-            required:true 
+            required:true
         }
     }],
- 
+
+    childname:{
+        type:String,
+        trim:true
+    },
+
     phone:{
         type:String,
+        trim:true,
         required:true
     },
- 
+
     _creator:{
         type:mongoose.Schema.Types.ObjectId,
         required:true
     },
- 
+    
     time:{
         required:true,
         type:String,
         default:null
     }
- 
+});
 
-}) ;
-
-
-
-module.exports = {Lost:lost}
+module.exports={Found:Found};
