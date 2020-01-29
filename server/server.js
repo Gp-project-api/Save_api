@@ -8,8 +8,11 @@ const {Found} = require('./db/models/found');
 const path = require('path');
 const _ = require('lodash');
 const bodyParser = require('body-parser');
+const {ObjectId} = require('mongodb');
 const {authintcate} = require('./Middleware/authinticate');
 const multer = require('multer');
+const fr = require('face-recognition');
+const recognizer = fr.FaceRecognizer();
 const address =  require('os').networkInterfaces().wlp3s0[0].address;
 var full_address;
 
@@ -19,7 +22,7 @@ var full_address;
         cb(null, './uploads')
         },
         filename: function (req, file, cb) {
-        cb(null, + '-' + new Date().toISOString().slice(0,10) + file.originalname )
+        cb(null,  + new Date().toISOString().slice(0,10) + file.originalname )
         }
     }) 
     var upload = multer({ storage: storage })
@@ -86,10 +89,9 @@ app.post('/login',(req,res) => {
             phone:req.body.phone,
             _creator:req.user._id,
             time:new Date().toISOString().slice(0,10),
-            image:[{
-                main_image:req.file.path,
-                main_image_URL:full_address+'/'+ path.basename(req.file.path)
-            }]
+            main_image:req.file.path,
+            main_image_URL:full_address+'/'+ path.basename(req.file.path)
+        
           
           });
           
@@ -116,21 +118,154 @@ app.post('/login',(req,res) => {
             phone:req.body.phone,
             _creator:req.user._id,
             time:new Date().toISOString().slice(0,10),
-            image:[{
-                main_image:req.file.path,
-                main_image_URL:full_address+'/'+ path.basename(req.file.path)
-            }] 
+            main_image:req.file.path,
+            main_image_URL:full_address+'/'+ path.basename(req.file.path) 
           });
           
   
         foundOne.save().then((data) => {
             res.status(200).send(data);
-        }).catch((e) => {res.status(400).send(e)})
-  
-        
-    }
+        }).catch((e) => {res.status(400).send(e)})   
+     }
+  });
 
-  })
+  // Search for a Lost child,(if any one upload his,her data)
+
+  app.post('/LostSearch/:gender',authintcate,upload.single(""),(req,res)=>{
+    if(!req.file)
+      res.send("No file Uploaded") 
+
+    var path = req.file.path;
+    var search_image = fr.loadImage(`./${path}`);
+
+    Lost.find({Gender:req.params.gender}).then((data) => {
+      var childs = data.map(child =>({
+          name:child.childname,
+          img:child.main_image
+      }));
+      childs.forEach(child => {
+          var img_path = child.img;
+          var image = fr.loadImage(`./${img_path}`);
+          var face = [image]
+          recognizer.addFaces(face,child.name)
+      });
+      
+      const predictions = recognizer.predict(search_image);
+      const accurate_predictions = predictions.filter((dis) => {return dis.distance < 0.3}); 
+       
+       if(accurate_predictions.length === 0){
+           res.status(200).send("Not found")
+       }else{
+           var names = accurate_predictions.map(name => name.className);
+           console.log(names);
+             Lost.find({childname:{$in:names}}).then((C_data) => {
+                 console.log(C_data);
+                 res.status(200).send(C_data)
+             }).catch((e) => {res.send(e)});
+       }
+
+      }).catch((e) => {res.status(400).send(e)})    
+      
+  });
+
+
+  // Search for a Found child,(if any one found him and upload his,her data)
+
+  app.post('/FoundSearch/:gender',authintcate,upload.single(""),(req,res)=>{
+    if(!req.file)
+      res.send("No file Uploaded") 
+
+    var path = req.file.path;
+    var search_image = fr.loadImage(`./${path}`);
+
+    Found.find({Gender:req.params.gender}).then((data) => {
+      var childs = data.map(child =>({
+          name:child.childname,
+          img:child.main_image
+      }));
+      childs.forEach(child => {
+          var img_path = child.img;
+          var image = fr.loadImage(`./${img_path}`);
+          var face = [image]
+          recognizer.addFaces(face,child.name)
+      });
+      
+      const predictions = recognizer.predict(search_image);
+      const accurate_predictions = predictions.filter((dis) => {return dis.distance < 0.3}); 
+       
+       if(accurate_predictions.length === 0){
+           res.status(200).send("Not found")
+       }else{
+           var names = accurate_predictions.map(name => name.className);
+           console.log(names);
+             Found.find({childname:{$in:names}}).then((C_data) => {
+                 console.log(C_data);
+                 res.status(200).send(C_data)
+             }).catch((e) => {res.send(e)});
+       }
+
+      }).catch((e) => {res.status(400).send(e)})    
+      
+  });
+
+  // Request for getting a user LostPosts
+
+  app.get('/LostPosts',authintcate,(req,res) => {
+      var id = req.user._id;
+      Lost.find({_creator:id}).then((data) => {
+           if(data.length === 0){
+               res.status(404).send("No Posts found")
+           }else{
+               res.status(200).send(data)
+           }
+           
+      }).catch((e) => {res.status(400).send(e)})
+  });
+
+  // Request for getting a user FoundPosts
+
+  app.get('/FoundPosts',authintcate,(req,res) => {
+    var id = req.user._id;
+    Found.find({_creator:id}).then((data) => {
+         if(data.length === 0){
+             res.status(404).send("No Posts found")
+         }else{
+             res.status(200).send(data)
+         }
+         
+    }).catch((e) => {res.status(400).send(e)})
+});
+
+
+//Request for deleting a LostPost
+
+app.delete('/LostPost/:id',authintcate,(req,res) => {
+    var id  = req.params.id
+    if(!ObjectId.isValid(id)){
+        return res.status(404).send("ID not Valid")
+    }
+   Lost.findOneAndDelete({_id:id , _creator:req.user.id}).then((data) => {
+       if(!data){
+           return res.status(404).send("No data Found");
+       }
+       res.status(200).send(data);
+   }).catch((e) => {res.status(400).send(e)});
+});
+     
+//Request for deleting a FoundPost
+
+app.delete('/FoundPost/:id',authintcate,(req,res) => {
+    var id  = req.params.id
+    if(!ObjectId.isValid(id)){
+        return res.status(404).send("ID not Valid")
+    }
+   Found.findOneAndDelete({_id:id , _creator:req.user.id}).then((data) => {
+       if(!data){
+           return res.status(404).send("No data Found");
+       }
+       res.status(200).send(data);
+   }).catch((e) => {res.status(400).send(e)});
+});
      
 
 

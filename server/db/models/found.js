@@ -7,18 +7,19 @@ const Found  = mongoose.model('Found',{
         index:true
        },
 
-    image:[{
-        main_image:{
+    
+    main_image:{
             type:String,
             trim:true,
             required:true
         },
-        main_image_URL:{
+
+    main_image_URL:{
             type:String,
             trim:true,
             required:true
-        }
-    }],
+        },
+    
 
     childname:{
         type:String,
