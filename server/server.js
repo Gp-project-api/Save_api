@@ -5,6 +5,7 @@ const mongoose = require('./db/mongoose');
 const {User} = require('./db/models/users');
 const {Lost} = require('./db/models/lost');
 const {Found} = require('./db/models/found');
+const {Accedints} =  require('./db/models/Road');
 const path = require('path');
 const _ = require('lodash');
 const bodyParser = require('body-parser');
@@ -266,6 +267,29 @@ app.delete('/FoundPost/:id',authintcate,(req,res) => {
        res.status(200).send(data);
    }).catch((e) => {res.status(400).send(e)});
 });
+
+// Request for posting a Road accedint
+
+app.post('/RoadAccedint',authintcate,upload.array('',4),(req,res) => {
+        if(req.files.length <=0){
+        res.status(400).send("please upload photos");
+    }else{
+         const files = req.files;
+         var data = files.map(p => ({img:p.path,url:full_address+'/'+p.path}));
+         var pahtes = data.map(e => e.img).join("|");
+         var urlPathes = data.map(e => e.url).join("|");
+        var acc = new Accedints({
+            inforamation:req.body.information,
+            _creator:req.user._id,
+            photo:pahtes,
+            photo_URL:urlPathes
+          
+        });
+       acc.save().then((data) => {
+           res.status(200).send(data);
+       }).catch((e) => {res.status(400).send(e)});
+    }
+})
      
 
 
