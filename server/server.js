@@ -67,6 +67,30 @@ app.post('/login',(req,res) => {
          res.send(req.user);
   })
 
+// Updating a user profile
+ app.patch('/editProfile',authintcate,(req,res) => {
+     var body = _.pick(req.body,['Fname','Lname','email','password','phone']);
+      User.findOneAndUpdate({_id:req.user._id},{$set:body},{new: true}).then((updated_usr) => {
+          if(!updated_usr)
+           res.status(404).send()
+           res.status(200).send(updated_usr);
+      }).catch((e) => {res.status(400).send(e)})
+ })
+
+ // get user by id
+  app.get('/user/:id',authintcate,(req,res) => {
+      var id = req.params.id;
+       if(!ObjectId.isValid(id)){
+         res.status(400).send("id not valid");
+      }
+      User.findOne({_id:id}).then((usr) => {
+          if(!usr){
+              res.status(404).send();
+          }
+          res.status(200).send(usr);
+      }).catch((e)=>{res.status(400).send()})
+  })
+
 
   // logout a user
 
@@ -114,7 +138,7 @@ app.post('/login',(req,res) => {
         res.status(400).send("No file uploaded")
     }else { 
         var foundOne = new Found({
-            childname:req.body.childname,
+            name:req.body.name,
             Gender:req.body.Gender,
             phone:req.body.phone,
             _creator:req.user._id,
@@ -140,6 +164,9 @@ app.post('/login',(req,res) => {
     var search_image = fr.loadImage(`./${path}`);
 
     Lost.find({Gender:req.params.gender}).then((data) => {
+        if(data.length === 0){
+            res.status(404).send('No childs with this gender right now')
+        }
       var childs = data.map(child =>({
           name:child.childname,
           img:child.main_image
@@ -180,8 +207,11 @@ app.post('/login',(req,res) => {
     var search_image = fr.loadImage(`./${path}`);
 
     Found.find({Gender:req.params.gender}).then((data) => {
+        if(data.length === 0){
+            res.status(404).send('No childs with this gender right now')
+        }
       var childs = data.map(child =>({
-          name:child.childname,
+          name:child.name,
           img:child.main_image
       }));
       childs.forEach(child => {
@@ -192,6 +222,7 @@ app.post('/login',(req,res) => {
       });
       
       const predictions = recognizer.predict(search_image);
+      console.log(predictions);
       const accurate_predictions = predictions.filter((dis) => {return dis.distance < 0.3}); 
        
        if(accurate_predictions.length === 0){
@@ -199,7 +230,7 @@ app.post('/login',(req,res) => {
        }else{
            var names = accurate_predictions.map(name => name.className);
            console.log(names);
-             Found.find({childname:{$in:names}}).then((C_data) => {
+             Found.find({name:{$in:names}}).then((C_data) => {
                  console.log(C_data);
                  res.status(200).send(C_data)
              }).catch((e) => {res.send(e)});
@@ -289,7 +320,18 @@ app.post('/RoadAccedint',authintcate,upload.array('',4),(req,res) => {
            res.status(200).send(data);
        }).catch((e) => {res.status(400).send(e)});
     }
-})
+});
+
+
+// Get request for getting acccedints
+ app.get('/RoadAccedint',authintcate,(req,res) => {
+     Accedints.find().then((data) => {
+         if(!data)
+          res.status(404).send("No Posts yet")
+
+         res.status(200).send(data);
+     }).catch((e) => {res.status(400).send(e)})
+ })
      
 
 

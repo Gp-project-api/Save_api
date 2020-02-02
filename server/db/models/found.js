@@ -21,9 +21,10 @@ const Found  = mongoose.model('Found',{
         },
     
 
-    childname:{
+    name:{
         type:String,
-        trim:true
+        trim:true,
+        required:true
     },
 
     phone:{
