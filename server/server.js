@@ -69,7 +69,7 @@ app.post('/login',(req,res) => {
 
 // Updating a user profile
  app.patch('/editProfile',authintcate,(req,res) => {
-     var body = _.pick(req.body,['Fname','Lname','email','password','phone']);
+     var body = _.pick(req.body,['Fname','Lname','email','password','phone','trusted1','trusted2','trusted3']);
       User.findOneAndUpdate({_id:req.user._id},{$set:body},{new: true}).then((updated_usr) => {
           if(!updated_usr)
            res.status(404).send()

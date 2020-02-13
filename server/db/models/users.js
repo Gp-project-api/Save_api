@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const valiator = require('validator');
 const JWT = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-
+const mongooseTypePhone = require('mongoose-type-phone');
 const UserSchema = new mongoose.Schema({
         Fname:{
             type:String,
@@ -19,7 +19,18 @@ const UserSchema = new mongoose.Schema({
         phone:{
             type:String,
             required:true,
-            trim:true
+        },
+
+        trusted1:{
+            type:String,
+        },
+
+        trusted2:{
+            type:String,
+        },
+
+        trusted3:{
+            type:String,
         },
         
         email:{
@@ -135,7 +146,7 @@ const UserSchema = new mongoose.Schema({
             }else{
                 next();
             }
-        })
+        });
 
  const user = mongoose.model('users',UserSchema);
  module.exports = {User:user}
