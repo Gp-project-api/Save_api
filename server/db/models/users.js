@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const valiator = require('validator');
 const JWT = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const mongooseTypePhone = require('mongoose-type-phone');
 const UserSchema = new mongoose.Schema({
         Fname:{
             type:String,
