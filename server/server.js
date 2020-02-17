@@ -14,7 +14,8 @@ const {authintcate} = require('./Middleware/authinticate');
 const multer = require('multer');
 const fr = require('face-recognition');
 const recognizer = fr.FaceRecognizer();
-const address =  require('os').networkInterfaces().wlp3s0[0].address;
+const ip = require('ip');
+const address = ip.address();
 var full_address;
 
 // Uploading Images to uploads folder for Lost
