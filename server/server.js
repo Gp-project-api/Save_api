@@ -12,8 +12,8 @@ const bodyParser = require('body-parser');
 const {ObjectId} = require('mongodb');
 const {authintcate} = require('./Middleware/authinticate');
 const multer = require('multer');
-const fr = require('face-recognition');
-const recognizer = fr.FaceRecognizer();
+// const fr = require('face-recognition');
+// const recognizer = fr.FaceRecognizer();
 const address = require('os').networkInterfaces(). wlp3s0[0].address;
 var full_address;
 
@@ -118,142 +118,142 @@ app.post('/login',(req,res) => {
 
   // upload a lost one data
 
-  app.post('/lost',authintcate,upload.single(""),(req,res) => {
+//   app.post('/lost',authintcate,upload.single(""),(req,res) => {
 
-    if(!req.file){
-        res.status(400).send("No file uploaded")
-    }else { 
-        var lostOne = new Lost({
-            childname:req.body.childname,
-            Gender:req.body.Gender,
-            phone:req.body.phone,
-            _creator:req.user._id,
-            time:new Date().toISOString().slice(0,10),
-            main_image:req.file.path,
-            main_image_URL:full_address+'/'+ path.basename(req.file.path)
+//     if(!req.file){
+//         res.status(400).send("No file uploaded")
+//     }else { 
+//         var lostOne = new Lost({
+//             childname:req.body.childname,
+//             Gender:req.body.Gender,
+//             phone:req.body.phone,
+//             _creator:req.user._id,
+//             time:new Date().toISOString().slice(0,10),
+//             main_image:req.file.path,
+//             main_image_URL:full_address+'/'+ path.basename(req.file.path)
         
           
-          });
+//           });
           
   
-        lostOne.save().then((data) => {
-            res.status(200).send(data);
-        }).catch((e) => {res.status(400).send(e)})
+//         lostOne.save().then((data) => {
+//             res.status(200).send(data);
+//         }).catch((e) => {res.status(400).send(e)})
   
         
-    }
+//     }
 
-  })
+//   })
 
   // upload a found child data
 
-  app.post('/found',authintcate,upload.single(""),(req,res) => {
+//   app.post('/found',authintcate,upload.single(""),(req,res) => {
 
-    if(!req.file){
-        res.status(400).send("No file uploaded")
-    }else { 
-        var foundOne = new Found({
-            name:req.body.name,
-            Gender:req.body.Gender,
-            phone:req.body.phone,
-            _creator:req.user._id,
-            time:new Date().toISOString().slice(0,10),
-            main_image:req.file.path,
-            main_image_URL:full_address+'/'+ path.basename(req.file.path) 
-          });
+//     if(!req.file){
+//         res.status(400).send("No file uploaded")
+//     }else { 
+//         var foundOne = new Found({
+//             name:req.body.name,
+//             Gender:req.body.Gender,
+//             phone:req.body.phone,
+//             _creator:req.user._id,
+//             time:new Date().toISOString().slice(0,10),
+//             main_image:req.file.path,
+//             main_image_URL:full_address+'/'+ path.basename(req.file.path) 
+//           });
           
   
-        foundOne.save().then((data) => {
-            res.status(200).send(data);
-        }).catch((e) => {res.status(400).send(e)})   
-     }
-  });
+//         foundOne.save().then((data) => {
+//             res.status(200).send(data);
+//         }).catch((e) => {res.status(400).send(e)})   
+//      }
+//   });
 
   // Search for a Lost child,(if any one upload his,her data)
 
-  app.post('/LostSearch/:gender',authintcate,upload.single(""),(req,res)=>{
-    if(!req.file)
-      res.send("No file Uploaded") 
+//   app.post('/LostSearch/:gender',authintcate,upload.single(""),(req,res)=>{
+//     if(!req.file)
+//       res.send("No file Uploaded") 
 
-    var path = req.file.path;
-    var search_image = fr.loadImage(`./${path}`);
+//     var path = req.file.path;
+//     var search_image = fr.loadImage(`./${path}`);
 
-    Lost.find({Gender:req.params.gender}).then((data) => {
-        if(data.length === 0){
-            res.status(404).send('No childs with this gender right now')
-        }
-      var childs = data.map(child =>({
-          name:child.childname,
-          img:child.main_image
-      }));
-      childs.forEach(child => {
-          var img_path = child.img;
-          var image = fr.loadImage(`./${img_path}`);
-          var face = [image]
-          recognizer.addFaces(face,child.name)
-      });
+//     Lost.find({Gender:req.params.gender}).then((data) => {
+//         if(data.length === 0){
+//             res.status(404).send('No childs with this gender right now')
+//         }
+//       var childs = data.map(child =>({
+//           name:child.childname,
+//           img:child.main_image
+//       }));
+//       childs.forEach(child => {
+//           var img_path = child.img;
+//           var image = fr.loadImage(`./${img_path}`);
+//           var face = [image]
+//           recognizer.addFaces(face,child.name)
+//       });
       
-      const predictions = recognizer.predict(search_image);
-      const accurate_predictions = predictions.filter((dis) => {return dis.distance < 0.3}); 
+//       const predictions = recognizer.predict(search_image);
+//       const accurate_predictions = predictions.filter((dis) => {return dis.distance < 0.3}); 
        
-       if(accurate_predictions.length === 0){
-           res.status(200).send("Not found")
-       }else{
-           var names = accurate_predictions.map(name => name.className);
-           console.log(names);
-             Lost.find({childname:{$in:names}}).then((C_data) => {
-                 console.log(C_data);
-                 res.status(200).send(C_data)
-             }).catch((e) => {res.send(e)});
-       }
+//        if(accurate_predictions.length === 0){
+//            res.status(200).send("Not found")
+//        }else{
+//            var names = accurate_predictions.map(name => name.className);
+//            console.log(names);
+//              Lost.find({childname:{$in:names}}).then((C_data) => {
+//                  console.log(C_data);
+//                  res.status(200).send(C_data)
+//              }).catch((e) => {res.send(e)});
+//        }
 
-      }).catch((e) => {res.status(400).send(e)})    
+//       }).catch((e) => {res.status(400).send(e)})    
       
-  });
+//   });
 
 
   // Search for a Found child,(if any one found him and upload his,her data)
 
-  app.post('/FoundSearch/:gender',authintcate,upload.single(""),(req,res)=>{
-    if(!req.file)
-      res.send("No file Uploaded") 
+//   app.post('/FoundSearch/:gender',authintcate,upload.single(""),(req,res)=>{
+//     if(!req.file)
+//       res.send("No file Uploaded") 
 
-    var path = req.file.path;
-    var search_image = fr.loadImage(`./${path}`);
+//     var path = req.file.path;
+//     var search_image = fr.loadImage(`./${path}`);
 
-    Found.find({Gender:req.params.gender}).then((data) => {
-        if(data.length === 0){
-            res.status(404).send('No childs with this gender right now')
-        }
-      var childs = data.map(child =>({
-          name:child.name,
-          img:child.main_image
-      }));
-      childs.forEach(child => {
-          var img_path = child.img;
-          var image = fr.loadImage(`./${img_path}`);
-          var face = [image]
-          recognizer.addFaces(face,child.name)
-      });
+//     Found.find({Gender:req.params.gender}).then((data) => {
+//         if(data.length === 0){
+//             res.status(404).send('No childs with this gender right now')
+//         }
+//       var childs = data.map(child =>({
+//           name:child.name,
+//           img:child.main_image
+//       }));
+//       childs.forEach(child => {
+//           var img_path = child.img;
+//           var image = fr.loadImage(`./${img_path}`);
+//           var face = [image]
+//           recognizer.addFaces(face,child.name)
+//       });
       
-      const predictions = recognizer.predict(search_image);
-      console.log(predictions);
-      const accurate_predictions = predictions.filter((dis) => {return dis.distance < 0.3}); 
+//       const predictions = recognizer.predict(search_image);
+//       console.log(predictions);
+//       const accurate_predictions = predictions.filter((dis) => {return dis.distance < 0.3}); 
        
-       if(accurate_predictions.length === 0){
-           res.status(200).send("Not found")
-       }else{
-           var names = accurate_predictions.map(name => name.className);
-           console.log(names);
-             Found.find({name:{$in:names}}).then((C_data) => {
-                 console.log(C_data);
-                 res.status(200).send(C_data)
-             }).catch((e) => {res.send(e)});
-       }
+//        if(accurate_predictions.length === 0){
+//            res.status(200).send("Not found")
+//        }else{
+//            var names = accurate_predictions.map(name => name.className);
+//            console.log(names);
+//              Found.find({name:{$in:names}}).then((C_data) => {
+//                  console.log(C_data);
+//                  res.status(200).send(C_data)
+//              }).catch((e) => {res.send(e)});
+//        }
 
-      }).catch((e) => {res.status(400).send(e)})    
+//       }).catch((e) => {res.status(400).send(e)})    
       
-  });
+//   });
 
   // Request for getting a user LostPosts
 
