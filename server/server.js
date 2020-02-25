@@ -14,8 +14,7 @@ const {authintcate} = require('./Middleware/authinticate');
 const multer = require('multer');
 const fr = require('face-recognition');
 const recognizer = fr.FaceRecognizer();
-const ip = require('ip');
-const address = ip.address();
+const address = require('os').networkInterfaces(). wlp3s0[0].address;
 var full_address;
 
 // Uploading Images to uploads folder for Lost
@@ -43,7 +42,9 @@ app.use(function (req, res, next) {
   
     // Request headers you wish to allow
     res.setHeader('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers,X-Access-Token,XKey,Authorization');
-  
+   
+    // Request headers credintials you wish to allow
+     res.setHeader('Access-Control-Allow-Credentials', true)
     next();
   });
 
