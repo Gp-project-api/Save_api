@@ -31,6 +31,14 @@ const UserSchema = new mongoose.Schema({
         trusted3:{
             type:String,
         },
+        address:{
+            type:String,
+            trim:true
+        },
+        bloodType:{
+            type:String,
+            trim:true
+        },
         
         email:{
             type:String,

@@ -34,6 +34,7 @@ console.log(os.platform());
 
 var app = express();
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(os.platform() == 'linux' ? 'uploads' : '../uploads'));
 app.use(function (req, res, next) {
     
@@ -87,7 +88,7 @@ app.post('/login',(req,res) => {
 
 // Updating a user profile
  app.post('/editProfile',authintcate,(req,res) => {
-     var body = _.pick(req.body,['Fname','Lname','email','password','phone','trusted1','trusted2','trusted3']);
+     var body = _.pick(req.body,['Fname','Lname','email','password','phone','trusted1','trusted2','trusted3','address','bloodType']);
       User.findOneAndUpdate({_id:req.user._id},{$set:body},{new: true}).then((updated_usr) => {
           if(!updated_usr)
            res.status(404).send()
@@ -324,12 +325,15 @@ app.post('/RoadAccedint',authintcate,upload.array('',4),(req,res) => {
         res.status(400).send("please upload photos");
     }else{
          const files = req.files;
+         console.log(files);
          var data = files.map(p => ({img:p.path,url:full_address+'/'+ path.basename(p.path)}));
          var pahtes = data.map(e => e.img).join("|");
          var urlPathes = data.map(e => e.url).join("|");
         var acc = new Accedints({
-            inforamation:req.body.information,
+            information:req.body.information,
             _creator:req.user._id,
+            city:req.body.city,
+            street:req.body.street,
             photo:pahtes,
             photo_URL:urlPathes
           
