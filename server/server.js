@@ -58,7 +58,7 @@ app.get('/',(req,res) => {
     res.send('Hello')
 })
 
-app.post('/image',upload.single,(req,res) => {
+app.post('/image',upload.single(""),(req,res) => {
   if(!req.file)
    res.status(400).send("no file ya hesham")
     res.status(200).send(req.file)
