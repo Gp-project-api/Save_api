@@ -1,12 +1,27 @@
 const mongoose = require('mongoose');
 
 const Found  = mongoose.model('Found',{
-    Gender:{
+    gender:{
         type:String,
         required:true,
         index:true
        },
+      
+    age:{
+        type:Number
+    },
 
+    descreption:{
+        type:String,
+        required:true,
+        trim:true
+    },
+
+    city:{
+        required:true,
+        trim:true,
+        type:String,
+    },
     
     main_image:{
             type:String,
@@ -42,6 +57,12 @@ const Found  = mongoose.model('Found',{
         required:true,
         type:String,
         default:null
+    },
+
+    post_time:{
+        type:String,
+        required:true,
+        default:new Date().toISOString().slice(0,10)
     }
 });
 

@@ -10,12 +10,28 @@ const lost = mongoose.model('losts',{
         index:true
     },
 
-    Gender:{
+    gender:{
       type:String,
       trim:true,
       required:true
     },
-    
+
+    age:{
+        required:true,
+        type:Number
+    },
+
+    city:{
+        required:true,
+        trim:true,
+        type:String,
+    },
+
+    descreption:{
+        type:String,
+        required:true,
+        trim:true
+    },
     
     main_image:{
             type:String,
@@ -44,6 +60,13 @@ const lost = mongoose.model('losts',{
         required:true,
         type:String,
         default:null
+    },
+
+    post_time:{
+        type:String,
+        required:true,
+        trim:true,
+        default:new Date().toISOString().slice(0,10)
     }
  
 

@@ -135,13 +135,15 @@ app.post('/login',(req,res) => {
     }else { 
         var lostOne = new Lost({
             childname:req.body.childname,
-            Gender:req.body.Gender,
+            gender:req.body.gender,
             phone:req.body.phone,
             _creator:req.user._id,
-            time:new Date().toISOString().slice(0,10),
+            city:req.body.city,
+            age:req.body.age,
+            descreption:req.body.descreption,
+            time:req.body.time,
             main_image:req.file.path,
             main_image_URL:full_address+'/'+ path.basename(req.file.path)
-        
           
           });
           
@@ -164,10 +166,13 @@ app.post('/login',(req,res) => {
     }else { 
         var foundOne = new Found({
             name:req.body.name,
-            Gender:req.body.Gender,
+            gender:req.body.gender,
+            age:req.body.age,
+            city:req.body.city,
+            descreption:req.body.descreption,
             phone:req.body.phone,
             _creator:req.user._id,
-            time:new Date().toISOString().slice(0,10),
+            time:req.body.time,
             main_image:req.file.path,
             main_image_URL:full_address+'/'+ path.basename(req.file.path) 
           });
@@ -188,7 +193,7 @@ app.post('/login',(req,res) => {
     var path = req.file.path;
     var search_image = fr.loadImage(`./${path}`);
 
-    Lost.find({Gender:req.params.gender}).then((data) => {
+    Lost.find({gender:req.params.gender}).then((data) => {
         if(data.length === 0){
             res.status(404).send('No childs with this gender right now')
         }
@@ -231,7 +236,7 @@ app.post('/login',(req,res) => {
     var path = req.file.path;
     var search_image = fr.loadImage(`./${path}`);
 
-    Found.find({Gender:req.params.gender}).then((data) => {
+    Found.find({gender:req.params.gender}).then((data) => {
         if(data.length === 0){
             res.status(404).send('No childs with this gender right now')
         }
