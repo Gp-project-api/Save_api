@@ -37,7 +37,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(os.platform() == 'linux' ? 'uploads' : '../uploads'));
 app.use(function (req, res, next) {
-    
     // Website you wish to allow to connect 
     res.setHeader('Access-Control-Allow-Origin', '*');
   
@@ -49,7 +48,7 @@ app.use(function (req, res, next) {
    
     // Request headers credintials you wish to allow
      res.setHeader('Access-Control-Allow-Credentials', true)
-    next();
+      next();
   });
 
 
@@ -65,69 +64,65 @@ app.post('/image',upload.single(""),(req,res) => {
 })
 
 
-// Signing up a new User
-app.post('/register',(req,res) => {
-    const body = _.pick(req.body,['Fname','Lname','phone','email','password']);
-    var newUser = new User(body);
-    newUser.save().then(() => {
-        return newUser.generateAuthToken()
-    }).then((token)=>{
-        res.header('X-AUTH',token).status(200).send(newUser);
-    }).catch((e) => {res.status(400).send(e)})
-})
 
-// signing in a registered user
-app.post('/login',(req,res) => {
-    var body = _.pick(req.body,['email','password']);
-    User.findByCredintials(body.email,body.password).then((user) => {
-        return user.generateAuthToken().then((token) => {
-            res.header('X-AUTH',token).send(user);
-        })
-    }).catch((e) => {res.status(404).send(e)});
-})
+    app.post('/register',(req,res) => {
+        const body = _.pick(req.body,['Fname','Lname','phone','email','password']);
+        var newUser = new User(body);
+        newUser.save().then(() => {
+            return newUser.generateAuthToken()
+        }).then((token)=>{
+            res.header('X-AUTH',token).status(200).send(newUser);
+        }).catch((e) => {res.status(400).send(e)})
+    })
 
 
-// Getting user profile data 
-  app.get('/profile',authintcate,(req,res) => {
-         res.send(req.user);
-  })
-
-// Updating a user profile
- app.post('/editProfile',authintcate,(req,res) => {
-     var body = _.pick(req.body,['Fname','Lname','email','password','phone','trusted1','trusted2','trusted3','address','bloodType']);
-      User.findOneAndUpdate({_id:req.user._id},{$set:body},{new: true}).then((updated_usr) => {
-          if(!updated_usr)
-           res.status(404).send()
-           res.status(200).send(updated_usr);
-      }).catch((e) => {res.status(400).send(e)})
- })
-
- // get user by id
-  app.get('/user/:id',authintcate,(req,res) => {
-      var id = req.params.id;
-       if(!ObjectId.isValid(id)){
-         res.status(400).send("id not valid");
-      }
-      User.findOne({_id:id}).then((usr) => {
-          if(!usr){
-              res.status(404).send();
-          }
-          res.status(200).send(usr);
-      }).catch((e)=>{res.status(400).send()})
-  })
+    app.post('/login',(req,res) => {
+        var body = _.pick(req.body,['email','password']);
+        User.findByCredintials(body.email,body.password).then((user) => {
+            return user.generateAuthToken().then((token) => {
+                res.header('X-AUTH',token).send(user);
+            })
+        }).catch((e) => {res.status(404).send(e)});
+    })
 
 
-  // logout a user
+    app.get('/profile',authintcate,(req,res) => {
+            res.send(req.user);
+    })
 
-  app.delete('/logout',authintcate,(req,res) => {
-     req.user.removeToken(req.token).then(() => {
-          res.status(200).send()
-      }).catch((e) => {res.status(404).send()})
-  })
+
+    app.post('/editProfile',authintcate,(req,res) => {
+        var body = _.pick(req.body,['Fname','Lname','email','password','phone','trusted1','trusted2','trusted3','address','bloodType']);
+        User.findOneAndUpdate({_id:req.user._id},{$set:body},{new: true}).then((updated_usr) => {
+            if(!updated_usr)
+            res.status(404).send()
+            res.status(200).send(updated_usr);
+        }).catch((e) => {res.status(400).send(e)})
+    })
+
+
+    app.get('/user/:id',authintcate,(req,res) => {
+        var id = req.params.id;
+        if(!ObjectId.isValid(id)){
+            res.status(400).send("id not valid");
+        }
+        User.findOne({_id:id}).then((usr) => {
+            if(!usr){
+                res.status(404).send();
+            }
+            res.status(200).send(usr);
+        }).catch((e)=>{res.status(400).send()})
+    })
+
+
+    app.delete('/logout',authintcate,(req,res) => {
+        req.user.removeToken(req.token).then(() => {
+            res.status(200).send()
+        }).catch((e) => {res.status(404).send()})
+    })
 
 
   // upload a lost one data
-
   app.post('/lost',authintcate,upload.single(""),(req,res) => {
 
     if(!req.file){
@@ -157,35 +152,7 @@ app.post('/login',(req,res) => {
 
   })
 
-  // upload a found child data
-
-  app.post('/found',authintcate,upload.single(""),(req,res) => {
-
-    if(!req.file){
-        res.status(400).send("No file uploaded")
-    }else { 
-        var foundOne = new Found({
-            name:req.body.name,
-            gender:req.body.gender,
-            age:req.body.age,
-            city:req.body.city,
-            descreption:req.body.descreption,
-            phone:req.body.phone,
-            _creator:req.user._id,
-            time:req.body.time,
-            main_image:req.file.path,
-            main_image_URL:full_address+'/'+ path.basename(req.file.path) 
-          });
-          
-  
-        foundOne.save().then((data) => {
-            res.status(200).send(data);
-        }).catch((e) => {res.status(400).send(e)})   
-     }
-  });
-
   // Search for a Lost child,(if any one upload his,her data)
-
   app.post('/LostSearch/:gender',authintcate,upload.single(""),(req,res)=>{
     if(!req.file)
       res.send("No file Uploaded") 
@@ -226,9 +193,120 @@ app.post('/login',(req,res) => {
       
   });
 
+  // Request for getting a user LostPosts
+  app.get('/LostPosts',authintcate,(req,res) => {
+    var id = req.user._id;
+    Lost.find({_creator:id}).then((data) => {
+         if(data.length === 0){
+             res.status(404).send("No Posts found")
+         }else{
+             res.status(200).send(data)
+         }
+         
+    }).catch((e) => {res.status(400).send(e)})
+});
+
+  // Request for getting all lost posts for timeline
+  app.get('/allLostPosts',authintcate,(req,res) => {
+    Lost.find().then((data) => {
+        res.status(200).send(data);
+    }).catch((e) => {res.status(404).send(e)});
+});
+
+  // Request for updating a lost post data
+  app.post('/editLostPost/:id',authintcate,(req,res) => {
+    var id = req.user._id,
+        post_id = req.params.id,
+        body = _.pick(req.body,['childname','gender','age','city','descreption','phone','time']);
+
+        if(! ObjectId.isValid(post_id)){
+        res.status(404).send();
+    }
+    Lost.findOneAndUpdate({_id:post_id,_creator:id},{$set:body},{new:true}).then((result) => {
+        if(!result){
+            res.status(404).send();
+        }
+        res.status(200).send(result);
+    }).catch((e) => {res.status(400).send(e)});
+
+});
+
+ // Request for updating a lost post image
+ app.post('/editLostPostImage/:id',authintcate,upload.single(""),(req,res) => {
+    var id = req.params.id,
+        user_id = req.user._id;
+    if(!ObjectId.isValid(id)){
+            res.status(404).send();
+        }
+    if(!req.file){
+            res.status(404).send();
+        }
+    Lost.findOneAndUpdate({_id:id,_creator:user_id},{$set:{
+        main_image:req.file.path,
+        main_image_URL:full_address+'/'+ path.basename(req.file.path)
+    }},
+    {new:true}
+    ).then((data) => {
+        res.status(200).send(data);
+    }).catch((e) => {res.status(400).send(e)})
+});
+
+ // Request for banning a lost post
+ app.patch('/banLostPost/:id',authintcate,(req,res) => {
+    var id = req.params.id;
+    if(!ObjectId.isValid(id)){
+        res.status(404).send();
+    }
+    Lost.findOneAndUpdate({_id:id},{$inc:{ban:1}},{new:true}).then((data) => {
+            if(!data){
+                res.status(404).send();
+            }
+        res.status(200).send(data);
+    }).catch((e) => {res.status(400).send(e)});
+ });
+
+ //Request for deleting a LostPost
+ app.delete('/LostPost/:id',authintcate,(req,res) => {
+        var id  = req.params.id
+        if(!ObjectId.isValid(id)){
+            return res.status(404).send("ID not Valid")
+        }
+    Lost.findOneAndDelete({_id:id , _creator:req.user.id}).then((data) => {
+        if(!data){
+            return res.status(404).send("No data Found");
+        }
+        res.status(200).send(data);
+    }).catch((e) => {res.status(400).send(e)});
+});
+
+
+  // upload a found child data
+  app.post('/found',authintcate,upload.single(""),(req,res) => {
+
+    if(!req.file){
+        res.status(400).send("No file uploaded")
+    }else { 
+        var foundOne = new Found({
+            name:req.body.name,
+            gender:req.body.gender,
+            age:req.body.age,
+            city:req.body.city,
+            descreption:req.body.descreption,
+            phone:req.body.phone,
+            _creator:req.user._id,
+            time:req.body.time,
+            main_image:req.file.path,
+            main_image_URL:full_address+'/'+ path.basename(req.file.path) 
+          });
+          
+  
+        foundOne.save().then((data) => {
+            res.status(200).send(data);
+        }).catch((e) => {res.status(400).send(e)})   
+     }
+  });
 
   // Search for a Found child,(if any one found him and upload his,her data)
-
   app.post('/FoundSearch/:gender',authintcate,upload.single(""),(req,res)=>{
     if(!req.file)
       res.send("No file Uploaded") 
@@ -270,22 +348,7 @@ app.post('/login',(req,res) => {
       
   });
 
-  // Request for getting a user LostPosts
-
-  app.get('/LostPosts',authintcate,(req,res) => {
-      var id = req.user._id;
-      Lost.find({_creator:id}).then((data) => {
-           if(data.length === 0){
-               res.status(404).send("No Posts found")
-           }else{
-               res.status(200).send(data)
-           }
-           
-      }).catch((e) => {res.status(400).send(e)})
-  });
-
   // Request for getting a user FoundPosts
-
   app.get('/FoundPosts',authintcate,(req,res) => {
     var id = req.user._id;
     Found.find({_creator:id}).then((data) => {
@@ -298,73 +361,116 @@ app.post('/login',(req,res) => {
     }).catch((e) => {res.status(400).send(e)})
 });
 
+   // Request for getting all found posts for timeline
+ app.get('/allFoundPosts',authintcate,(req,res) => {
+        Found.find().then((data) => {
+            res.status(200).send(data);
+        }).catch((e) => {res.status(404).send(e)});
+    });
 
-//Request for deleting a LostPost
+    // Request for updating a found post data
+ app.post('/editFoundPost/:id',authintcate,(req,res) => {
+        var id = req.user._id,
+            post_id = req.params.id,
+            body = _.pick(req.body,['gender','age','descreption','city','name','phone','time']);
+    
+            if(! ObjectId.isValid(post_id)){
+            res.status(404).send();
+        }
+        Found.findOneAndUpdate({_id:post_id,_creator:id},{$set:body},{new:true}).then((result) => {
+            if(!result){
+                res.status(404).send();
+            }
+            res.status(200).send(result);
+        }).catch((e) => {res.status(400).send(e)});
 
-app.delete('/LostPost/:id',authintcate,(req,res) => {
-    var id  = req.params.id
+    });
+
+ // Request for updating a found post image
+ app.post('/editFoundPostImage/:id',upload.single(""),authintcate,(req,res) => {
+     if(!req.file){
+            res.status(404).send();
+        }
+    var id = req.params.id,
+        user_id = req.user._id;
     if(!ObjectId.isValid(id)){
-        return res.status(404).send("ID not Valid")
-    }
-   Lost.findOneAndDelete({_id:id , _creator:req.user.id}).then((data) => {
-       if(!data){
-           return res.status(404).send("No data Found");
+            res.status(404).send();
+        }
+    Found.findOneAndUpdate({_id:id,_creator:user_id},{$set:{
+        main_image:req.file.path,
+        main_image_URL:full_address+'/'+ path.basename(req.file.path)
+       }},
+       {
+        new:true
        }
-       res.status(200).send(data);
-   }).catch((e) => {res.status(400).send(e)});
+    ).then((data) => {
+        res.status(200).send(data);
+    }).catch((e) => {res.status(400).send(e)})
 });
-     
+  
+  // Request for banning a found post
+  app.patch('/banFoundPost/:id',authintcate,(req,res) => {
+    var id = req.params.id;
+    if(!ObjectId.isValid(id)){
+        res.status(404).send();
+    }
+    Found.findOneAndUpdate({_id:id},{$inc:{ban:1}},{new:true}).then((data) => {
+            if(!data){
+                res.status(404).send();
+            }
+        res.status(200).send(data);
+    }).catch((e) => {res.status(400).send(e)});
+ });
+   
 //Request for deleting a FoundPost
-
-app.delete('/FoundPost/:id',authintcate,(req,res) => {
-    var id  = req.params.id
-    if(!ObjectId.isValid(id)){
-        return res.status(404).send("ID not Valid")
-    }
-   Found.findOneAndDelete({_id:id , _creator:req.user.id}).then((data) => {
-       if(!data){
-           return res.status(404).send("No data Found");
-       }
-       res.status(200).send(data);
-   }).catch((e) => {res.status(400).send(e)});
-});
+ app.delete('/FoundPost/:id',authintcate,(req,res) => {
+        var id  = req.params.id
+        if(!ObjectId.isValid(id)){
+            return res.status(404).send("ID not Valid")
+        }
+    Found.findOneAndDelete({_id:id , _creator:req.user.id}).then((data) => {
+        if(!data){
+            return res.status(404).send("No data Found");
+        }
+        res.status(200).send(data);
+    }).catch((e) => {res.status(400).send(e)});
+    });
 
 // Request for posting a Road accedint
 
 app.post('/RoadAccedint',authintcate,upload.array('',4),(req,res) => {
-        if(req.files.length <=0){
-        res.status(400).send("please upload photos");
-    }else{
-         const files = req.files;
-         console.log(files);
-         var data = files.map(p => ({img:p.path,url:full_address+'/'+ path.basename(p.path)}));
-         var pahtes = data.map(e => e.img).join("|");
-         var urlPathes = data.map(e => e.url).join("|");
-        var acc = new Accedints({
-            information:req.body.information,
-            _creator:req.user._id,
-            city:req.body.city,
-            street:req.body.street,
-            photo:pahtes,
-            photo_URL:urlPathes
-          
-        });
-       acc.save().then((data) => {
-           res.status(200).send(data);
-       }).catch((e) => {res.status(400).send(e)});
-    }
-});
+            if(req.files.length <=0){
+            res.status(400).send("please upload photos");
+        }else{
+            const files = req.files;
+            console.log(files);
+            var data = files.map(p => ({img:p.path,url:full_address+'/'+ path.basename(p.path)}));
+            var pahtes = data.map(e => e.img).join("|");
+            var urlPathes = data.map(e => e.url).join("|");
+            var acc = new Accedints({
+                information:req.body.information,
+                _creator:req.user._id,
+                city:req.body.city,
+                street:req.body.street,
+                photo:pahtes,
+                photo_URL:urlPathes
+            
+            });
+        acc.save().then((data) => {
+            res.status(200).send(data);
+        }).catch((e) => {res.status(400).send(e)});
+        }
+    });
 
+    // Get request for getting acccedints
+app.get('/RoadAccedint',authintcate,(req,res) => {
+        Accedints.find().then((data) => {
+            if(!data)
+            res.status(404).send("No Posts yet")
 
-// Get request for getting acccedints
- app.get('/RoadAccedint',authintcate,(req,res) => {
-     Accedints.find().then((data) => {
-         if(!data)
-          res.status(404).send("No Posts yet")
-
-         res.status(200).send(data);
-     }).catch((e) => {res.status(400).send(e)})
- })
+            res.status(200).send(data);
+        }).catch((e) => {res.status(400).send(e)})
+    })
      
 
 

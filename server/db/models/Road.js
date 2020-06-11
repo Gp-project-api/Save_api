@@ -30,6 +30,13 @@ const Accedints = mongoose.model('Road Accedints',{
             type:String,
             required:true
     },
+    
+    ban:{
+        type:Number,
+        default:0,
+        required:true,
+        max:5
+    }
 
   
 

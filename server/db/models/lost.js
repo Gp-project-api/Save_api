@@ -67,6 +67,13 @@ const lost = mongoose.model('losts',{
         required:true,
         trim:true,
         default:new Date().toISOString().slice(0,10)
+    },
+    
+    ban:{
+        type:Number,
+        max:5,
+        default:0,
+        required:true
     }
  
 
