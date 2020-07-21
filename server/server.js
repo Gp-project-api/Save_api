@@ -6,6 +6,8 @@ const {User} = require('./db/models/users');
 const {Lost} = require('./db/models/lost');
 const {Found} = require('./db/models/found');
 const {Accedints} =  require('./db/models/Road');
+const {Humanitrain} = require('./db/models/humanitarian');
+const {LostThings} = require('./db/models/lostthings');
 const path = require('path');
 const _ = require('lodash');
 const bodyParser = require('body-parser');
@@ -14,7 +16,8 @@ const {authintcate} = require('./Middleware/authinticate');
 const multer = require('multer');
 const fr = require('face-recognition');
 const recognizer = fr.FaceRecognizer();
-const address = require('os').networkInterfaces(). wlp3s0[0].address;
+const alladdress = require('os').networkInterfaces();
+const address = alladdress['vEthernet (Internal Ethernet Port Windows Phone Emulator Internal Switch)'][1].address;
 var full_address;
 const os = require('os');
 
@@ -23,7 +26,7 @@ console.log(os.platform());
 // Uploading Images to uploads folder for Lost
     var storage = multer.diskStorage({
         destination: function (req, file, cb) {
-        cb(null, os.platform() == 'linux' ? './uploads' : '../uploads')
+        cb(null, './uploads')
         },
         filename: function (req, file, cb) {
         cb(null,file.originalname )
@@ -35,7 +38,7 @@ console.log(os.platform());
 var app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(os.platform() == 'linux' ? 'uploads' : '../uploads'));
+app.use(express.static('./uploads'));
 app.use(function (req, res, next) {
     // Website you wish to allow to connect 
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -155,9 +158,10 @@ app.post('/image',upload.single(""),(req,res) => {
   // Search for a Lost child,(if any one upload his,her data)
   app.post('/LostSearch/:gender',authintcate,upload.single(""),(req,res)=>{
     if(!req.file)
-      res.send("No file Uploaded") 
+      res.send("No file ") 
 
     var path = req.file.path;
+    console.log(path);
     var search_image = fr.loadImage(`./${path}`);
 
     Lost.find({gender:req.params.gender}).then((data) => {
@@ -176,6 +180,7 @@ app.post('/image',upload.single(""),(req,res) => {
       });
       
       const predictions = recognizer.predict(search_image);
+      console.log(predictions);
       const accurate_predictions = predictions.filter((dis) => {return dis.distance < 0.3}); 
        
        if(accurate_predictions.length === 0){
@@ -186,10 +191,10 @@ app.post('/image',upload.single(""),(req,res) => {
              Lost.find({childname:{$in:names}}).then((C_data) => {
                  console.log(C_data);
                  res.status(200).send(C_data)
-             }).catch((e) => {res.send(e)});
+             }).catch((e) => {res.status(400).send('did it')});
        }
 
-      }).catch((e) => {res.status(400).send(e)})    
+      }).catch((e) => {res.status(400).send('did not')})    
       
   });
 
@@ -470,8 +475,125 @@ app.get('/RoadAccedint',authintcate,(req,res) => {
 
             res.status(200).send(data);
         }).catch((e) => {res.status(400).send(e)})
-    })
-     
+    });
+
+    // post Humantirian post
+ app.post('/humanstatus',authintcate,upload.array('',4),(req,res) => {
+    if(req.files.length == 0){
+        res.status(404).send();
+    }else{
+    var files = req.files;
+    var data = files.map(p => ({img:p.path,url:full_address+'/'+ path.basename(p.path)}));
+    var pahtes = data.map(e => e.img).join("|");
+    var urlPathes = data.map(e => e.url).join("|");
+    var humanstatus = new Humanitrain({
+        descreption:req.body.descreption,
+        phone:req.body.phone,
+        city:req.body.city,
+        photo:pahtes,
+        photo_URL:urlPathes,
+        _creator:req.user._id
+    });
+    humanstatus.save().then((data) => {
+        res.status(200).send(data);
+    }).catch((e) => {res.status(400).send(e)});
+  }
+ });
+
+     //get humatrain posts
+
+    app.get('/humanstatus',authintcate,(req,res) => {
+        Humanitrain.find().then((data) => {
+            if(!data){
+                res.status(404).send();
+            }
+            res.status(200).send(data);
+        }).catch((e) => {res.status(400).send(e)});
+    });
+
+      // get my humantrain posts
+
+      app.get('/myhumanstatus',authintcate,(req,res) => {
+          var id = req.user._id;
+        Humanitrain.find({_creator:id}).then((data) => {
+            if(!data){
+                res.status(404).send();
+            }
+            res.status(200).send(data);
+        }).catch((e) => {res.status(400).send(e)});
+    });
+
+       // get humantrain post by id
+
+       app.get('/myhumanstatus/:id',authintcate,(req,res) => {
+        var id = req.params.id;
+      Humanitrain.find({_id:id}).then((data) => {
+          if(!data){
+              res.status(404).send();
+          }
+          res.status(200).send(data);
+      }).catch((e) => {res.status(400).send(e)});
+  });
+
+  // post lostthings posts
+
+   app.post('/lostthings',authintcate,upload.array('',4),(req,res) => {
+    if(req.files.length == 0){
+        res.status(404).send();
+    }else{
+    var files = req.files;
+    var data = files.map(p => ({img:p.path,url:full_address+'/'+ path.basename(p.path)}));
+    var pahtes = data.map(e => e.img).join("|");
+    var urlPathes = data.map(e => e.url).join("|");
+    var lostthing = new LostThings({
+        descreption:req.body.descreption,
+        phone:req.body.phone,
+        city:req.body.city,
+        type:req.body.type,
+        photo:pahtes,
+        photo_URL:urlPathes,
+        _creator:req.user._id
+    });
+    lostthing.save().then((data) => {
+        console.log(data);
+        res.status(200).send(data);
+    }).catch((e) => {res.status(400).send(e)});
+   }
+});
+
+  // get lostthings posts
+
+  app.get('/lostthings',authintcate,(req,res) => {
+    LostThings.find().then((data) => {
+        if(data.length == 0){
+            res.status(404).send();
+        }
+        res.status(200).send(data);
+    }).catch((e) => {res.status(400).send(e)});
+});
+
+   // get my Lost thing post
+   app.get('/mylostthing',authintcate,(req,res) => {
+    var id = req.user._id;
+  LostThings.find({_creator:id}).then((data) => {
+      if(!data){
+          res.status(404).send();
+      }
+      res.status(200).send(data);
+  }).catch((e) => {res.status(400).send(e)});
+});
+
+  // get lostthing post by id
+
+  app.get('/lostthing/:id',authintcate,(req,res) => {
+    var id = req.params.id;
+  LostThings.find({_id:id}).then((data) => {
+      if(!data){
+          res.status(404).send();
+      }
+      res.status(200).send(data);
+  }).catch((e) => {res.status(400).send(e)});
+});
 
 
 
@@ -480,7 +602,7 @@ app.listen(process.env.PORT,address,(err) => {
         console.log(`an error occured: ${err}`);
     }else{
         full_address = `http://${address}:${process.env.PORT}`;
-        console.log(full_address );
+        console.log(full_address);
     }
 })
 
