@@ -20,7 +20,7 @@
     "face-recognition": "^0.9.4",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
-    "mocha": "^6.2.2",
+    "mocha": "^10.2.0",
     "mongodb": "^3.5.2",
     "mongoose": "^5.7.6",
     "mongoose-type-phone": "^1.0.1",
